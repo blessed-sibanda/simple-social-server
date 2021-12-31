@@ -1,4 +1,3 @@
-const jwt = require('jsonwebtoken');
 const expressJwt = require('express-jwt');
 
 const config = require('../config');
@@ -18,16 +17,4 @@ const isProfileOwner = async (req, res, next) => {
   next();
 };
 
-const createJwt = (user) => {
-  const payload = {
-    email: user.email,
-    id: user._id,
-  };
-  const accessToken = jwt.sign(payload, config.jwtSecret, {
-    subject: user._id.toString(),
-    expiresIn: '1d',
-  });
-  return accessToken;
-};
-
-module.exports = { createJwt, requireAuth, isProfileOwner };
+module.exports = { requireAuth, isProfileOwner };
