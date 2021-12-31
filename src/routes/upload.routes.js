@@ -11,4 +11,6 @@ router.get('/files', uploadCtrl.getFiles);
 
 router.get('/files/:name', uploadCtrl.downloadFile);
 
+router.delete('/files/:name', uploadCtrl.deleteFile);
+
 module.exports = router;

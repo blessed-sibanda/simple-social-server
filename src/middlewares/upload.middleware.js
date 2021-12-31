@@ -3,14 +3,19 @@ const multer = require('multer');
 const { GridFsStorage } = require('multer-gridfs-storage');
 const config = require('../config');
 const UUID = require('uuidjs');
+const User = require('../models/user.model');
+
+const saveUserPhoto = (req) => {};
 
 const storage = new GridFsStorage({
   url: config.mongoUri,
+  cache: true,
   options: { useNewUrlParser: true, useUnifiedTopology: true },
-  file: (req, file) => {
+  file: async (req, file) => {
+    const filename = `${Date.now()}-${UUID.generate()}-${file.originalname}`;
     return {
       bucketName: config.fileBucket,
-      filename: `${Date.now()}-${UUID.generate()}-${file.originalname}`,
+      filename,
     };
   },
 });

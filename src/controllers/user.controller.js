@@ -1,10 +1,15 @@
 const merge = require('lodash/merge');
 const User = require('../models/user.model');
 const { formatError } = require('../helpers/error.helper');
+const { uploadSingleFile } = require('../middlewares/upload.middleware');
+const config = require('../config');
 
 module.exports.getUsers = async (req, res) => {
   try {
-    let users = await User.find().select('name email updatedAt createdAt');
+    let users = await User.find().select(
+      'name email updatedAt createdAt photo photoUrl',
+    );
+
     res.json(users);
   } catch (err) {
     res.status(400).json(formatError(err));
@@ -28,6 +33,7 @@ module.exports.getUserById = async (req, res, next, id) => {
         error: 'User not found',
       });
     req.profile = user;
+    if (user.photo) req.profile.photo = config.filesUrl + user.photo;
     next();
   } catch (err) {
     next(err);
@@ -44,6 +50,10 @@ module.exports.updateUser = async (req, res) => {
       delete req.body.email;
 
     let user = merge(req.profile, req.body);
+
+    await uploadSingleFile(req, res);
+    if (req.file) user.photo = req.file.filename;
+
     let updatedUser = await user.save();
     return res.json(updatedUser);
   } catch (err) {

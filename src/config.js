@@ -1,4 +1,5 @@
 const databaseName = 'simple-social-server';
+const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
 
 module.exports = {
   mongoUri:
@@ -13,5 +14,6 @@ module.exports = {
   jwtSecret: process.env.JWT_SECRET || 'my-secret',
   fileBucket: 'files',
   databaseName,
-  baseUrl: process.env.BASE_URL || 'http://localhost:3000',
+  baseUrl,
+  filesUrl: baseUrl + '/api/upload/files/',
 };

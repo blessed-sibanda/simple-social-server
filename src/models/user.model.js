@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const crypto = require('crypto');
+const config = require('../config');
 
 const userSchema = new mongoose.Schema(
   {
@@ -24,10 +25,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
-    photo: {
-      data: Buffer,
-      contentType: String,
-    },
+    photo: String,
   },
   { timestamps: true },
 );
@@ -42,6 +40,12 @@ userSchema
   .get(function () {
     return this._password;
   });
+
+userSchema.virtual('photoUrl').get(function () {
+  console.log('This -->', this.photo);
+  if (this.photo) return config.filesUrl + this.photo;
+  else return '';
+});
 
 userSchema.methods = {
   authenticate: function (plainText) {
@@ -68,5 +72,8 @@ userSchema.path('hashedPassword').validate(function (v) {
     this.invalidate('password', 'Password is required');
   }
 }, null);
+
+userSchema.set('toObject', { virtuals: true });
+userSchema.set('toJSON', { virtuals: true });
 
 module.exports = mongoose.model('User', userSchema);
