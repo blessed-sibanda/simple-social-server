@@ -1,14 +1,15 @@
 const merge = require('lodash/merge');
+const formidable = require('formidable');
 const User = require('../models/user.model');
 const { formatError } = require('../helpers/error.helper');
 const { uploadSingleFile } = require('../middlewares/upload.middleware');
 const config = require('../config');
+const { removeFile } = require('../helpers/upload.helper');
+const debug = require('debug')('simple-social-server:user-controller');
 
 module.exports.getUsers = async (req, res) => {
   try {
-    let users = await User.find().select(
-      'name email updatedAt createdAt photo photoUrl',
-    );
+    let users = await User.find().select('name email updatedAt createdAt photo');
 
     res.json(users);
   } catch (err) {
@@ -33,26 +34,42 @@ module.exports.getUserById = async (req, res, next, id) => {
         error: 'User not found',
       });
     req.profile = user;
-    if (user.photo) req.profile.photo = config.filesUrl + user.photo;
     next();
   } catch (err) {
     next(err);
   }
 };
 
+const updatedUserData = (user, data) => {
+  delete data._id;
+  delete data.hashedPassword;
+  delete data.salt;
+  delete data.photo;
+
+  if (data.email && data.email.trim() === user.email) delete data.email;
+
+  return merge(user, data);
+};
+
 module.exports.updateUser = async (req, res) => {
+  let user = req.profile;
+
   try {
-    delete req.body._id;
-    delete req.body.hashedPassword;
-    delete req.body.salt;
+    let form = new formidable.IncomingForm();
+    form.keepExtensions = true;
 
-    if (req.body.email && req.body.email.trim() === req.profile.email)
-      delete req.body.email;
-
-    let user = merge(req.profile, req.body);
+    form.parse(req, async (err, fields, files) => {
+      user = updatedUserData(user, fields);
+    });
 
     await uploadSingleFile(req, res);
-    if (req.file) user.photo = req.file.filename;
+
+    if (req.file) {
+      await removeFile(req.profile.photo);
+      user.photo = req.file.filename;
+    } else {
+      user = updatedUserData(user, req.body);
+    }
 
     let updatedUser = await user.save();
     return res.json(updatedUser);
@@ -63,6 +80,7 @@ module.exports.updateUser = async (req, res) => {
 
 module.exports.deleteUser = async (req, res) => {
   try {
+    await removeFile(req.profile.photo);
     await req.profile.remove();
     res.status(204).json();
   } catch (err) {

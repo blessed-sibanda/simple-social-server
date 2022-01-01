@@ -18,4 +18,9 @@ const fileBucket = async () => {
   return bucket;
 };
 
-module.exports = { filesCollection, fileBucket };
+const removeFile = async (filename) => {
+  let files = await filesCollection();
+  await files.deleteOne({ filename });
+};
+
+module.exports = { filesCollection, fileBucket, removeFile };

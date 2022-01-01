@@ -5,11 +5,9 @@ const config = require('../config');
 const UUID = require('uuidjs');
 const User = require('../models/user.model');
 
-const saveUserPhoto = (req) => {};
-
 const storage = new GridFsStorage({
   url: config.mongoUri,
-  cache: true,
+  // cache: true,
   options: { useNewUrlParser: true, useUnifiedTopology: true },
   file: async (req, file) => {
     const filename = `${Date.now()}-${UUID.generate()}-${file.originalname}`;

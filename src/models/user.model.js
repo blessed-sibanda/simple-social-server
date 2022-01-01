@@ -42,9 +42,9 @@ userSchema
   });
 
 userSchema.virtual('photoUrl').get(function () {
-  console.log('This -->', this.photo);
-  if (this.photo) return config.filesUrl + this.photo;
-  else return '';
+  if (this.photo) {
+    return config.filesUrl + this.photo;
+  } else return '';
 });
 
 userSchema.methods = {
