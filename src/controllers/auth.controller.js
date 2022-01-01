@@ -14,7 +14,10 @@ module.exports.login = async (req, res) => {
 
 module.exports.currentUser = async (req, res, next) => {
   try {
-    let user = await User.findById(req.auth.sub);
+    let user = await User.findById(req.auth.sub)
+      .populate('followers', '_id name photo photoUrl')
+      .populate('following', '_id name photo photoUrl');
+
     res.json(user);
   } catch (err) {
     next(err);

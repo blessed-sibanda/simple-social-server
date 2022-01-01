@@ -20,4 +20,8 @@ router.put('/:userId', requireAuth, isProfileOwner, userCtrl.updateUser);
 
 router.delete('/:userId', requireAuth, isProfileOwner, userCtrl.deleteUser);
 
+router.put('/:userId/follow', requireAuth, userCtrl.followUser);
+
+router.delete('/:userId/follow', requireAuth, userCtrl.unfollowUser);
+
 module.exports = router;

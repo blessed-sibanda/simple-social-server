@@ -28,7 +28,9 @@ module.exports.createUser = async (req, res) => {
 
 module.exports.getUserById = async (req, res, next, id) => {
   try {
-    let user = await User.findById(id);
+    let user = await User.findById(id)
+      .populate('following', '_id name photo photoUrl')
+      .populate('followers', '_id name photo photoUrl');
     if (!user)
       return res.status(404).json({
         error: 'User not found',
@@ -85,5 +87,49 @@ module.exports.deleteUser = async (req, res) => {
     res.status(204).json();
   } catch (err) {
     res.status(400).json(formatError(err));
+  }
+};
+
+module.exports.followUser = async (req, res) => {
+  try {
+    if (req.profile._id.toString() === req.auth.id)
+      throw new Error('You cannot follow yourself');
+    await User.findByIdAndUpdate(req.auth.id, {
+      $addToSet: { following: req.profile._id },
+    });
+    let followedUser = await User.findByIdAndUpdate(
+      req.profile._id,
+      {
+        $addToSet: { followers: req.auth.id },
+      },
+      { new: true },
+    )
+      .populate('followers', '_id name photo photoUrl')
+      .populate('following', '_id name photo photoUrl');
+    res.json(followedUser);
+  } catch (err) {
+    return res.status(400).json(formatError(err));
+  }
+};
+
+module.exports.unfollowUser = async (req, res) => {
+  try {
+    if (req.profile._id.toString() === req.auth.id)
+      throw new Error('You cannot unfollow yourself');
+    await User.findByIdAndUpdate(req.auth.id, {
+      $pull: { following: req.profile._id },
+    });
+    let unfollowedUser = await User.findByIdAndUpdate(
+      req.profile._id,
+      {
+        $pull: { followers: req.auth.id },
+      },
+      { new: true },
+    )
+      .populate('followers', '_id name photo photoUrl')
+      .populate('following', '_id name photo photoUrl');
+    res.json(unfollowedUser);
+  } catch (err) {
+    return res.status(400).json(formatError(err));
   }
 };
