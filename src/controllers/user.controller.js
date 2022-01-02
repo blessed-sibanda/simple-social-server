@@ -133,3 +133,18 @@ module.exports.unfollowUser = async (req, res) => {
     return res.status(400).json(formatError(err));
   }
 };
+
+module.exports.findPeople = async (req, res) => {
+  try {
+    let currentUser = await User.findById(req.auth.id).populate('following', '_id');
+    let following = currentUser.following;
+    following.push(currentUser._id);
+
+    let users = await User.find({ _id: { $nin: following } }).select(
+      '_id name photo photoUrl',
+    );
+    res.json(users);
+  } catch (err) {
+    return res.status(500).json(formatError(err));
+  }
+};

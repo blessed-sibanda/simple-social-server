@@ -12,6 +12,8 @@ router.post('/', userCtrl.createUser);
 
 router.param('userId', userCtrl.getUserById);
 
+router.get('/people', requireAuth, userCtrl.findPeople);
+
 router.get('/:userId', requireAuth, async (req, res) => {
   res.json(req.profile);
 });
