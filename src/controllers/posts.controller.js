@@ -8,11 +8,26 @@ const { formatError } = require('../helpers/error.helper');
 
 module.exports.postFeed = async (req, res) => {
   try {
-    let currentUser = await User.findById(req.auth.id).populate('following', '_id');
-    let following = currentUser.following;
-    following.push(currentUser._id);
+    let user = await User.findById(req.auth.id).populate('following', '_id');
+    let following = user.following;
+    following.push(user._id);
     let posts = await Post.find({ postedBy: { $in: following } })
-      .populate('comments.postedBy', '_id name photo photoUrl')
+      .populate('comments', '_id text commentedBy')
+      .populate('comments.commentedBy', '_id name photo photoUrl')
+      .populate('postedBy', '_id name photo photoUrl')
+      .populate('likes', '_id')
+      .sort('-createdAt');
+    res.json(posts);
+  } catch (err) {
+    return res.status(500).json(formatError(err));
+  }
+};
+
+module.exports.userPosts = async (req, res) => {
+  try {
+    let posts = await Post.find({ postedBy: req.params.userId })
+      .populate('comments', '_id text commentedBy')
+      .populate('comments.commentedBy', '_id name photo photoUrl')
       .populate('postedBy', '_id name photo photoUrl')
       .populate('likes', '_id')
       .sort('-createdAt');
@@ -82,6 +97,37 @@ module.exports.unlikePost = async (req, res, next) => {
       { $pull: { likes: req.auth.id } },
       { new: true },
     ).populate('likes', '_id');
+    res.json(post);
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports.createComment = async (req, res, next) => {
+  try {
+    let post = await Post.findByIdAndUpdate(
+      req.params.postId,
+      { $addToSet: { comments: { commentedBy: req.auth.id, text: req.body.text } } },
+      { new: true },
+    )
+      .populate('comments', '_id text commentedBy')
+      .populate('postedBy', '_id name photo photoUrl')
+      .populate('comments.commentedBy', '_id name photo photoUrl');
+    res.json(post);
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports.deleteComment = async (req, res, next) => {
+  try {
+    let post = await Post.findByIdAndUpdate(
+      req.params.postId,
+      { $pull: { comments: { _id: req.params.commentId } } },
+      { new: true },
+    )
+      .populate('comments', '_id text commentedBy')
+      .populate('comments.commentedBy', '_id name photo photoUrl');
     res.json(post);
   } catch (err) {
     next(err);
