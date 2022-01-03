@@ -11,4 +11,8 @@ router.get('/', requireAuth, postsCtrl.postFeed);
 
 router.delete('/:postId', requireAuth, isPostOwner, postsCtrl.deletePost);
 
+router.put('/:postId/like', requireAuth, postsCtrl.likePost);
+
+router.delete('/:postId/like', requireAuth, postsCtrl.unlikePost);
+
 module.exports = router;

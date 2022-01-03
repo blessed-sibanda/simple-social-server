@@ -14,6 +14,7 @@ module.exports.postFeed = async (req, res) => {
     let posts = await Post.find({ postedBy: { $in: following } })
       .populate('comments.postedBy', '_id name photo photoUrl')
       .populate('postedBy', '_id name photo photoUrl')
+      .populate('likes', '_id')
       .sort('-createdAt');
     res.json(posts);
   } catch (err) {
@@ -39,6 +40,10 @@ module.exports.createPost = async (req, res) => {
     }
 
     await post.save();
+    post = await Post.findById(post._id).populate(
+      'postedBy',
+      '_id name photo photoUrl',
+    );
     return res.json(post);
   } catch (err) {
     console.log('error -->', err);
@@ -54,5 +59,31 @@ module.exports.deletePost = async (req, res) => {
     res.status(204).json();
   } catch (err) {
     res.status(400).json(formatError(err));
+  }
+};
+
+module.exports.likePost = async (req, res, next) => {
+  try {
+    let post = await Post.findByIdAndUpdate(
+      req.params.postId,
+      { $addToSet: { likes: req.auth.id } },
+      { new: true },
+    ).populate('likes', '_id');
+    res.json(post);
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports.unlikePost = async (req, res, next) => {
+  try {
+    let post = await Post.findByIdAndUpdate(
+      req.params.postId,
+      { $pull: { likes: req.auth.id } },
+      { new: true },
+    ).populate('likes', '_id');
+    res.json(post);
+  } catch (err) {
+    next(err);
   }
 };
