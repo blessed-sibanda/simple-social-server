@@ -41,10 +41,9 @@ Access MongoDB Shell
 
 ```bash
 $ docker exec -it local-mongo sh
-$ mongo
+# mongo
 ```
 
-```
 Run the development server
 
 ```bash
