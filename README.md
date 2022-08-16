@@ -4,15 +4,17 @@ Node.js social media application with rudimentary features inspired by existing 
 
 ## Features
 
-- Content Management System for instructors to create courses, modules and their contents
+- Users can sign-up and sign-in 
 
-- Course catalog where students can browse and enroll in different courses. 
+- Users can update their profiles with a description and profile photo
 
-- Students can access contents for their enrolled courses
+- Users can follow each other
 
-- JSON RESTful API with endpoints to retrieve subjects, retrieve available courses and their contents, and enroll in a course
+- Users can post messages (with photos)
 
-## SetUp Instructions
+- Users can read, comment and like/unlike posts from followed users
+
+## Set-Up Instructions
 
 ### Install [Git](https://git-scm.com/downloads)
 
@@ -51,3 +53,5 @@ $ npm run dev
 ```
 
 Open the API at [http://127.0.0.1:3000](http://127.0.0.1:3000)
+
+#### To Run the Frontend, clone this [repo](https://github.com/blessed-sibanda/simple-social) and follow instructions
